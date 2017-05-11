@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "start": "newman run ./tests/SoFiExample.postman_collection.json -e ./enviroments/movie-db.postman_environment.json"
+  },
+  "dependencies": {
+    "newman": "^3.5.2"
+  }
+}

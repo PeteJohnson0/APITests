@@ -1,0 +1,142 @@
+{
+	"variables": [],
+	"info": {
+		"name": "SoFiExample",
+		"_postman_id": "e3ff87ed-e569-d5bf-aaa1-0b51a45f0823",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "authentication",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var data = JSON.parse(responseBody);",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"  \"success\": \"Boolean\",",
+							"  \"expires_at\": \"String\",",
+							"  \"request_token\": \"String\"",
+							"};",
+							"",
+							"/*Tests*/",
+							"",
+							"//Verifying that status code that comes back is a 200",
+							"tests[\"Reponse code === 200\"] = responseCode.code === 200;",
+							"//Verifiying the response time is less than 500ms",
+							"tests[\"Response time is less than 500ms\"] = responseTime < 500;",
+							"//Verifing the value of the key seccess is true",
+							"tests[\"The value to success is true\"] = data.success = true;",
+							"//Validating that the schema that is retruned is what we are expecting and if not logging the errors to the console",
+							"tests[\"Valid scehma\"] = tv4.validate(data, schema);",
+							"console.log(\"Validation failed: \", tv4.error);",
+							"",
+							"//Setting Variables",
+							"postman.setGlobalVariable(\"token\", data.request_token);",
+							"postman.setGlobalVariable( \"authCallback\", postman.getResponseHeader(\"Authentication-Callback\"))"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "{{base_url}}/3/authentication/token/new?api_key={{api_key}}",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  api_key: {{api_key}}\n}"
+				},
+				"description": "Authentication for movieDB"
+			},
+			"response": []
+		},
+		{
+			"name": "createSession",
+			"request": {
+				"url": "{{authCallback}}",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "nowPlaying",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var data = JSON.parse(responseBody);",
+							"",
+							"tests[\"The #2 movie in the country is not rated for adults\"] = data.results[1].adult === !true;",
+							"tests[\"The top 5 movies playing currently belongs to more than one genre\"] = data.results[0, 1, 2, 3, 4].genre_ids.length > 1;",
+							"",
+							"for (var i in data.results){",
+							"    var obj = data.results[i];",
+							"    tests[\"id of movie #\" + i + \" is not null\"] = !!obj.id;",
+							"    tests[\"id of movie #\" + i + \" is not empty\"] = obj.id !== \"\";",
+							"}",
+							"",
+							"//Variables",
+							"",
+							"",
+							"postman.setGlobalVariable(\"movieId\", data.results[0].id);"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "{{base_url}}/3/movie/now_playing?api_key={{api_key}}&language=en-US&page=1",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "movieDetails",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var data = JSON.parse(responseBody);",
+							"",
+							"//Tests",
+							"",
+							"tests[\"The actors in this movie speak english\"] = data.spoken_languages[0].name === \"English\""
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "{{base_url}}/3/movie/283995?api_key={{api_key}}&language=en-US",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
